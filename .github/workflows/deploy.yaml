@@ -1,0 +1,48 @@
+name: Deployment
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    environment: production
+    concurrency: production
+    steps:
+      - name: Branch name
+        id: branch_name
+        run: |
+          echo ::set-output name=SOURCE_NAME::${GITHUB_REF#refs/*/}
+          echo ::set-output name=SOURCE_BRANCH::${GITHUB_REF#refs/heads/}
+          echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Build binary
+        env:
+          GOOS: linux
+          GOARCH: arm64
+        run: |
+          go mod vendor
+          go build -o bin/dns-api ./cmd/api.go
+
+      - name: Deploy
+        env:
+          DEPLOYMENT_HOST: ${{ secrets.DEPLOYMENT_HOST }}
+          DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
+          DEPLOYMENT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+          SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
+          RELEASES: /var/www/dns-api/releases
+        run: |
+          ssh-keyscan -H ${DEPLOYMENT_HOST} >> ~/.ssh/known_hosts
+          rsync -r bin ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST}:${RELEASES}/${SOURCE_TAG}
+          ssh ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST} " \
+            cd /var/www/dns-api && \
+            chmod +x releases/${SOURCE_TAG}/bin/dns-api && \
+            ln -sfn releases/${SOURCE_TAG} current && \
+            systemctl restart dns-api"
