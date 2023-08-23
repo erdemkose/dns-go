@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -11,6 +13,10 @@ import (
 )
 
 func main() {
+	var unixSocket string
+	flag.StringVar(&unixSocket, "unix-socket", "dns-api.sock", "Unix socket")
+	flag.Parse()
+
 	d := domains.Controller{
 		DNS: dns.NewService(),
 	}
@@ -22,5 +28,11 @@ func main() {
 	})
 	r.Handle("/*", http.FileServer(http.Dir("./static")))
 
-	log.Fatal(http.ListenAndServe(":80", r))
+	l, err := net.Listen("unix", unixSocket)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s := http.Server{Handler: r}
+	log.Fatal(s.Serve(l))
 }
