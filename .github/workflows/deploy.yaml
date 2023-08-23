@@ -45,6 +45,6 @@ jobs:
             cd /var/www/dns-api && \
             ln -sfn releases/${SOURCE_TAG} current && \
             chmod +x current/bin/dns-api && \
-            chown -R dnsapi:dnsapi current && \
-            chown -R dnsapi:dnsapi releases/${SOURCE_TAG} && \
+            chown -R www-data:www-data current && \
+            chown -R www-data:www-data releases/${SOURCE_TAG} && \
             systemctl restart dns-api"
