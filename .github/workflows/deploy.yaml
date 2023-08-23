@@ -10,10 +10,7 @@ jobs:
     steps:
       - name: Branch name
         id: branch_name
-        run: |
-          echo ::set-output name=SOURCE_NAME::${GITHUB_REF#refs/*/}
-          echo ::set-output name=SOURCE_BRANCH::${GITHUB_REF#refs/heads/}
-          echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
+        run: echo "SOURCE_TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -37,7 +34,6 @@ jobs:
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
           DEPLOYMENT_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOYMENT_SSH_KNOWN_HOSTS }}
-          SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
           RELEASES: /var/www/dns-api/releases
         run: |
           mkdir -p ~/.ssh
