@@ -36,11 +36,15 @@ jobs:
           DEPLOYMENT_HOST: ${{ secrets.DEPLOYMENT_HOST }}
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+          DEPLOYMENT_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOYMENT_SSH_KNOWN_HOSTS }}
           SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
           RELEASES: /var/www/dns-api/releases
         run: |
+          mkdir -p ~/.ssh
+          echo "${DEPLOYMENT_SSH_PRIVATE_KEY}" > ~/.ssh/id_ed25519
+          echo "${DEPLOYMENT_SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
           rsync -r bin ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST}:${RELEASES}/${SOURCE_TAG}
-          ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST} " \
+          ssh ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST} " \
             cd /var/www/dns-api && \
             chmod +x releases/${SOURCE_TAG}/bin/dns-api && \
             ln -sfn releases/${SOURCE_TAG} current && \
