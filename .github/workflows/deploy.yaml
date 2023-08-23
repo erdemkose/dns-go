@@ -42,9 +42,10 @@ jobs:
           echo "${DEPLOYMENT_SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
           rsync -r bin ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST}:${RELEASES}/${SOURCE_TAG}
           ssh ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST} " \
+            systemctl stop dns-api && \
             cd /var/www/dns-api && \
             ln -sfn releases/${SOURCE_TAG} current && \
             chmod +x current/bin/dns-api && \
             chown -R www-data:www-data current && \
             chown -R www-data:www-data releases/${SOURCE_TAG} && \
-            systemctl restart dns-api"
+            systemctl start dns-api"
