@@ -33,6 +33,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	defer func(l net.Listener) {
+		err := l.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(l)
+
 	s := http.Server{Handler: r}
 	log.Fatal(s.Serve(l))
 }
