@@ -43,6 +43,8 @@ jobs:
           rsync -r bin ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST}:${RELEASES}/${SOURCE_TAG}
           ssh ${DEPLOYMENT_USER}@${DEPLOYMENT_HOST} " \
             cd /var/www/dns-api && \
-            chmod +x releases/${SOURCE_TAG}/bin/dns-api && \
             ln -sfn releases/${SOURCE_TAG} current && \
+            chmod +x current/bin/dns-api && \
+            chown -R dnsapi:dnsapi current \
+            chown -R dnsapi:dnsapi releases/${SOURCE_TAG} \
             systemctl restart dns-api"
