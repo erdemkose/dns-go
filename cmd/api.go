@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 
 	"dns/internal/api/domains"
 	"dns/internal/dns"
@@ -18,7 +19,34 @@ func main() {
 		DNS: dns.NewService(),
 	}
 
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{
+			"https://dnschecker.app/*",
+			"https://dnschecker.pages.dev/*",
+		},
+		AllowedMethods: []string{
+			"GET",
+			"OPTIONS",
+		},
+		AllowedHeaders: []string{
+			"Accept",
+			"Accept-Language",
+			"Content-Language",
+			"Content-Type",
+		},
+		ExposedHeaders: []string{
+			"Content-Language",
+			"Content-Length",
+			"Content-Type",
+			"Expires",
+			"Last-Modified",
+			"Pragma",
+		},
+		MaxAge: 300,
+	})
+
 	r := chi.NewRouter()
+	r.Use(c.Handler)
 	r.Get("/v1/resolvers/{resolver}/domains/{domain}", d.Show)
 
 	network, address, ok := parseNetworkAndAddress()
