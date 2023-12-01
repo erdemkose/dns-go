@@ -21,8 +21,8 @@ func main() {
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{
-			"https://dnschecker.app/*",
-			"https://dnschecker.pages.dev/*",
+			"https://dnschecker.app",
+			"https://dnschecker.pages.dev",
 		},
 		AllowedMethods: []string{
 			"GET",
